@@ -1,0 +1,10 @@
+node_modules
+.vscode
+dist
+dist-ssr
+*.local
+.DS_Store
+*.xlsx
+*.csv
+# Solo ignorar datos si el usuario lo prefiere, pero incluiremos la carpeta data/ con ejemplos
+# data/
