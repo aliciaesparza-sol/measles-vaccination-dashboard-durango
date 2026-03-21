@@ -37,7 +37,6 @@ const SHEETS = [
   '40 a 49 Años'
 ];
 
-// Refined Mapping including variations found in Nominal CSV
 const MAPPING: { [raw: string]: string } = {
   'PEÃ‘ON BLANCO': 'Peñón Blanco',
   'PENON BLANCO': 'Peñón Blanco',
@@ -82,6 +81,7 @@ export const processV4Data = async (
   ]);
 
   const popSheet = popWb.Sheets['Durango'];
+  if (!popSheet) throw new Error("No se encontró la hoja 'Durango' en el archivo de población.");
   const popData = XLSX.utils.sheet_to_json(popSheet, { header: 1 }) as any[][];
 
   let ageStartRow = -1;
@@ -89,7 +89,6 @@ export const processV4Data = async (
     if (popData[i].includes('Edad')) { ageStartRow = i; break; }
   }
 
-  // FIXED: Removed the exclusion of 'Durango' which is a valid municipality name
   const muniNamesInPop = popData[ageStartRow].slice(1).filter(n => n && String(n).trim() !== '' && !String(n).includes('Poblacion Total'));
   
   const result: ExcelFidelityState = {};
@@ -99,10 +98,10 @@ export const processV4Data = async (
     '6 a 11 Meses': 0.5,
     '1 Año': 1.0,
     '18 Meses': 1.0,
-    'Rezagos 2-12 Años': 0.5,
-    '13 a 19 Años': 0.5,
-    '20 a 39 Años': 0.5,
-    '40 a 49 Años': 0.5,
+    'Rezagos 2-12 Años': 0.3, // Meta ajustable según campaña
+    '13 a 19 Años': 0.2,
+    '20 a 39 Años': 0.2,
+    '40 a 49 Años': 0.2,
     'Resumen': 1.0 
   };
 
@@ -122,7 +121,10 @@ export const processV4Data = async (
     muniNamesInPop.forEach((m, idx) => {
       const val = parseInt(row[idx + 1]) || 0;
       if (age === 0) universeMap[m]['6 a 11 Meses'] += val;
-      if (age === 1) { universeMap[m]['1 Año'] += val; universeMap[m]['18 Meses'] += val; }
+      if (age === 1) { 
+        universeMap[m]['1 Año'] += val; 
+        universeMap[m]['18 Meses'] += val; 
+      }
       if (age >= 2 && age <= 12) universeMap[m]['Rezagos 2-12 Años'] += val;
       if (age >= 13 && age <= 19) universeMap[m]['13 a 19 Años'] += val;
       if (age >= 20 && age <= 39) universeMap[m]['20 a 39 Años'] += val;
@@ -148,14 +150,16 @@ export const processV4Data = async (
     let matchedMuni = MAPPING[rawMuni] || normalizedPopNames[normalize(rawMuni)];
     if (!matchedMuni) return;
 
-    doseMap[matchedMuni]['6 a 11 Meses'] += (parseInt(row['SRP 6 A 11 MESES PRIMERA']) || 0) + (parseInt(row['SR 6 A 11 MESES PRIMERA']) || 0);
-    doseMap[matchedMuni]['1 Año'] += (parseInt(row['SRP 1 ANIO  PRIMERA']) || 0);
-    doseMap[matchedMuni]['18 Meses'] += (parseInt(row['SRP 18 MESES SEGUNDA']) || 0);
-    doseMap[matchedMuni]['Rezagos 2-12 Años'] += (parseInt(row['SRP 2 A 5 ANIOS PRIMERA']) || 0) + (parseInt(row['SRP 6 ANIOS PRIMERA']) || 0) + (parseInt(row['SRP 7 A 9 ANIOS PRIMERA']) || 0) + (parseInt(row['SRP 10 A 12 ANIOS PRIMERA']) || 0);
-    doseMap[matchedMuni]['13 a 19 Años'] += (parseInt(row['SRP 13 a 19 ANIOS PRIMERA']) || 0) + (parseInt(row['SRP 10 A 19 ANIOS PRIMERA']) || 0);
-    doseMap[matchedMuni]['20 a 39 Años'] += (parseInt(row['SRP 20 A 29 ANIOS PRIMERA']) || 0) + (parseInt(row['SRP 30 A 39 ANIOS PRIMERA']) || 0);
-    doseMap[matchedMuni]['40 a 49 Años'] += (parseInt(row['SRP 40 A 49 ANIOS PRIMERA']) || 0);
-    (doseMap[matchedMuni] as any)['6y'] += (parseInt(row['SRP 6 ANIOS SEGUNDA']) || 0) + (parseInt(row['SR 6 ANIOS SEGUNDA']) || 0);
+    const val = (h: string) => parseInt(row[h]) || 0;
+
+    doseMap[matchedMuni]['6 a 11 Meses'] += val('SRP 6 A 11 MESES PRIMERA') + val('SR 6 A 11 MESES PRIMERA');
+    doseMap[matchedMuni]['1 Año'] += val('SRP 1 ANIO  PRIMERA');
+    doseMap[matchedMuni]['18 Meses'] += val('SRP 18 MESES SEGUNDA');
+    doseMap[matchedMuni]['Rezagos 2-12 Años'] += val('SRP 2 A 5 ANIOS PRIMERA') + val('SRP 6 ANIOS PRIMERA') + val('SRP 7 A 9 ANIOS PRIMERA') + val('SRP 10 A 12 ANIOS PRIMERA');
+    doseMap[matchedMuni]['13 a 19 Años'] += val('SRP 13 a 19 ANIOS PRIMERA') + val('SRP 10 A 19 ANIOS PRIMERA');
+    doseMap[matchedMuni]['20 a 39 Años'] += val('SRP 20 A 29 ANIOS PRIMERA') + val('SRP 30 A 39 ANIOS PRIMERA');
+    doseMap[matchedMuni]['40 a 49 Años'] += val('SRP 40 A 49 ANIOS PRIMERA');
+    (doseMap[matchedMuni] as any)['6y'] += val('SRP 6 ANIOS SEGUNDA') + val('SR 6 ANIOS SEGUNDA');
   });
 
   const cubosSheet = cubosWb.Sheets[cubosWb.SheetNames[0]];
@@ -172,9 +176,9 @@ export const processV4Data = async (
     SHEETS.forEach(s => {
       const universo = universeMap[m][s];
       const pMeta = metaPcts[s] || 1.0;
-      const meta = universo * pMeta;
+      const meta = Math.ceil(universo * pMeta);
       const nominal = doseMap[m][s] || 0;
-      const total = nominal; // Cubos are state-wide
+      const total = nominal; 
       const pendientes = Math.max(0, meta - total);
       const cobertura = meta ? (total / meta) * 100 : 0;
       
@@ -185,11 +189,12 @@ export const processV4Data = async (
     });
   });
 
+  // Regularización por Cubos (Estatal)
   ['Resumen', '1 Año', '18 Meses'].forEach(s => {
     const totalC = cubosTotals[s] || 0;
     if (totalC > 0) {
       result[s].push({
-        municipio: 'REGULARIZACIÓN CUBOS 25 (ESTATAL)', universo: 0, pctMeta: 0, meta: 0, cubos: totalC, nominal: 0, total: totalC, pendientes: 0, cobertura: 100, semaforo: '🟢 ÓPTIMO'
+        municipio: 'REGULARIZACIÓN CUBOS (ESTATAL)', universo: 0, pctMeta: 0, meta: 0, cubos: totalC, nominal: 0, total: totalC, pendientes: 0, cobertura: 100, semaforo: '🟢 ÓPTIMO'
       });
     }
   });
@@ -225,10 +230,10 @@ const readCsv = (file: File): Promise<any[]> => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const lines = text.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const lines = text.split('\n').filter(l => l.trim().length > 0);
+      const headers = parseCsvLine(lines[0]);
       const data = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        const values = parseCsvLine(line);
         const obj: any = {};
         headers.forEach((h, i) => obj[h] = values[i]);
         return obj;
@@ -238,3 +243,20 @@ const readCsv = (file: File): Promise<any[]> => {
     reader.readAsText(file, 'latin1');
   });
 };
+
+const parseCsvLine = (line: string): string[] => {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') inQuotes = !inQuotes;
+    else if (c === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else cur += c;
+  }
+  result.push(cur.trim());
+  return result;
+};
+
