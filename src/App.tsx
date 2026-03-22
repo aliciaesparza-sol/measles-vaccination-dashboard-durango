@@ -39,27 +39,51 @@ const App: React.FC = () => {
     <div className="dashboard-container">
       <aside className="sidebar">
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <img
-            src="/logo.png"
-            alt="Logo Durango"
-            style={{ width: '110px', height: 'auto', marginBottom: '0.75rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))' }}
-          />
-          <h2 style={{ fontSize: '0.85rem', color: '#fff', letterSpacing: '1px', fontWeight: 800, lineHeight: 1.2 }}>
+          <div style={{ background: '#fff', padding: '10px 15px', borderRadius: '12px', display: 'inline-block', marginBottom: '1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <img
+              src="/logo.png"
+              alt="Logo Durango"
+              style={{ width: '130px', height: 'auto', display: 'block' }}
+            />
+          </div>
+          <h2 style={{ fontSize: '0.95rem', color: '#fff', letterSpacing: '1px', fontWeight: 800, lineHeight: 1.2 }}>
             VACUNACIÓN<br />DURANGO
           </h2>
-          <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>Secretaría de Salud</p>
         </div>
+        
         <nav>
           <div className="nav-item active" style={{
             display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px',
             borderRadius: '10px', background: 'rgba(255,255,255,0.15)', cursor: 'pointer',
-            fontSize: '0.9rem', fontWeight: 500
+            fontSize: '0.9rem', fontWeight: 500, marginBottom: '2rem'
           }}>
             <LayoutDashboard size={18} /> Tablero SRP/SR
           </div>
         </nav>
-        <div style={{ position: 'absolute', bottom: '1rem', left: 0, right: 0, textAlign: 'center', fontSize: '0.65rem', opacity: 0.6, color: '#fff' }}>
-          Corte: {data.corteFecha} | v5.0
+
+        {/* Semáforo Legend */}
+        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '10px', marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '0.75rem', color: '#fff', opacity: 0.9, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Código Semáforo</h3>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.75rem', color: '#eccdd2', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1rem' }}>🟢</span> ≥ 95% (Meta)
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1rem' }}>🟡</span> 80% - 94% (Proceso)
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1rem' }}>🔴</span> &lt; 80% (Crítico)
+            </li>
+          </ul>
+        </div>
+
+        {/* Info Footer */}
+        <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', right: '1rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>
+          <strong style={{ color: '#fff' }}>Fuente:</strong> Cubos + Nominal SISCENSIA<br/>
+          <strong style={{ color: '#fff' }}>Universo:</strong> CONAPO 2026<br/>
+          <strong style={{ color: '#fff' }}>Semana Epi:</strong> Semana 12<br/>
+          <strong style={{ color: '#fff' }}>Corte:</strong> {data.corteFecha}<br/>
+          <span style={{ opacity: 0.5, display: 'block', marginTop: '4px' }}>v5.1 (Institucional)</span>
         </div>
       </aside>
 
