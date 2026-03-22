@@ -3,6 +3,8 @@ import { LayoutDashboard } from 'lucide-react';
 import { processStaticData, DashboardV4 } from './utils/dataProcessor';
 import './styles/dashboard.css';
 
+import logo from './assets/logo.png';
+
 const App: React.FC = () => {
   const [data, setData] = useState<DashboardV4 | null>(null);
   const [activeTab, setActiveTab] = useState<string>('RESUMEN MUNICIPIOS');
@@ -41,7 +43,7 @@ const App: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ background: '#fff', padding: '10px 15px', borderRadius: '12px', display: 'inline-block', marginBottom: '1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
             <img
-              src="/logo.png"
+              src={logo}
               alt="Logo Durango"
               style={{ width: '130px', height: 'auto', display: 'block' }}
             />
