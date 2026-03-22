@@ -95,15 +95,13 @@ export const processStaticData = (): DashboardV4 => {
         total, pendientes, cobertura, semaforo
       });
 
-      if (s !== '6-11 Meses') {
-        r_universo += universo;
-        r_meta += meta;
-        r_nom25 += nom25;
-        r_nom26 += nom26;
-        r_nominal += nominal;
-        r_cubos += cubos;
-        r_total += total;
-      }
+      r_universo += universo;
+      r_meta += meta;
+      r_nom25 += nom25;
+      r_nom26 += nom26;
+      r_nominal += nominal;
+      r_cubos += cubos;
+      r_total += total;
     });
 
     const r_pendientes = Math.max(0, r_meta - r_total);

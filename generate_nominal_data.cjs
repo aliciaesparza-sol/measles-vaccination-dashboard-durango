@@ -76,13 +76,56 @@ for(let i=1; i<lines.length; i++) {
   const yKey = is2026 ? 'y26' : 'y25';
 
   const d = doseMap[matchedMuni];
-  d['6-11 Meses'][yKey] += val(vals, 'SRP 6 A 11 MESES PRIMERA') + val(vals, 'SR 6 A 11 MESES PRIMERA');
-  d['1 Año'][yKey] += val(vals, 'SRP 1 ANIO  PRIMERA');
-  d['18 Meses'][yKey] += val(vals, 'SRP 18 MESES SEGUNDA');
-  d['Rezag 2-12 Años'][yKey] += val(vals, 'SRP 2 A 5 ANIOS PRIMERA') + val(vals, 'SRP 6 ANIOS PRIMERA') + val(vals, 'SRP 7 A 9 ANIOS PRIMERA') + val(vals, 'SRP 10 A 12 ANIOS PRIMERA');
-  d['13-19 Años'][yKey] += val(vals, 'SRP 13 A 19 ANIOS PRIMERA') + val(vals, 'SRP 10 A 19 ANIOS PRIMERA');
-  d['20-39 Años'][yKey] += val(vals, 'SRP 20 A 29 ANIOS PRIMERA') + val(vals, 'SRP 30 A 39 ANIOS PRIMERA');
-  d['40-49 Años'][yKey] += val(vals, 'SRP 40 A 49 ANIOS PRIMERA');
+  const sumCols = (cList) => cList.reduce((acc, c) => acc + val(vals, c), 0);
+
+  d['6-11 Meses'][yKey] += sumCols([
+    'SRP 6 A 11 MESES PRIMERA', 'SR 6 A 11 MESES PRIMERA'
+  ]);
+  
+  d['1 Año'][yKey] += sumCols([
+    'SRP 1 ANIO  PRIMERA', 'SR 1 ANIO PRIMERA'
+  ]);
+  
+  d['18 Meses'][yKey] += sumCols([
+    'SRP 18 MESES SEGUNDA', 'SR 18 MESES SEGUNDA'
+  ]);
+  
+  d['Rezag 2-12 Años'][yKey] += sumCols([
+    'SRP 2 A 5 ANIOS PRIMERA', 'SRP 2 A 5 ANIOS SEGUNDA',
+    'SRP 6 ANIOS PRIMERA', 'SRP 6 ANIOS SEGUNDA',
+    'SRP 7 A 9 ANIOS PRIMERA', 'SRP 7 A 9 ANIOS SEGUNDA',
+    'SRP 10 A 12 ANIOS PRIMERA', 'SRP 10 A 12 ANIOS SEGUNDA',
+    'SR 2 A 5 ANIOS PRIMERA', 'SR 2 A 5 ANIOS SEGUNDA',
+    'SR 6 ANIOS PRIMERA', 'SR 6 ANIOS SEGUNDA',
+    'SR 7 A 9 ANIOS PRIMERA', 'SR 7 A 9 ANIOS SEGUNDA',
+    'SR 10 A 12 ANIOS PRIMERA', 'SR 10 A 12 ANIOS SEGUNDA'
+  ]);
+  
+  d['13-19 Años'][yKey] += sumCols([
+    'SRP 13 A 19 ANIOS PRIMERA', 'SRP 13 A 19 ANIOS SEGUNDA',
+    'SRP 10 A 19 ANIOS PRIMERA', 'SRP 10 A 19 ANIOS SEGUNDA',
+    'SR 13 A 19 ANIOS PRIMERA', 'SR 13 A 19 ANIOS SEGUNDA',
+    'SR 10 A 19 ANIOS PRIMERA', 'SR 10 A 19 ANIOS SEGUNDA'
+  ]);
+  
+  d['20-39 Años'][yKey] += sumCols([
+    'SRP 20 A 29 ANIOS PRIMERA', 'SRP 20 A 29 ANIOS SEGUNDA',
+    'SRP 30 A 39 ANIOS PRIMERA', 'SRP 30 A 39 ANIOS SEGUNDA',
+    'SR 20 A 29 ANIOS PRIMERA', 'SR 20 A 29 ANIOS SEGUNDA',
+    'SR 30 A 39 ANIOS PRIMERA', 'SR 30 A 39 ANIOS SEGUNDA',
+    // Incluir personal institucional y jornaleros en este grupo (el más grande adulto)
+    'SRP PERSONAL DE SALUD PRIMERA', 'SRP  PERSONAL DE SALUD SEGUNDA',
+    'SRP PERSONAL EDUCATIVO PRIMERA', 'SRP  PERSONAL EDUCATIVO SEGUNDA',
+    'SRP JORNALEROS AGRICOLAS PRIMERA', 'SRP JORNALEROS AGRICOLAS SEGUNDA',
+    'SR PERSONAL DE SALUD PRIMERA', 'SR PERSONAL DE SALUD SEGUNDA',
+    'SR PERSONAL EDUCATIVO PRIMERA', 'SR PERSONAL EDUCATIVO SEGUNDA',
+    'SR JORNALEROS AGRICOLAS PRIMERA', 'SR JORNALEROS AGRICOLAS SEGUNDA'
+  ]);
+  
+  d['40-49 Años'][yKey] += sumCols([
+    'SRP 40 A 49 ANIOS PRIMERA', 'SRP 40 A 49 ANIOS SEGUNDA',
+    'SR 40 A 49 ANIOS PRIMERA', 'SR 40 A 49 ANIOS SEGUNDA'
+  ]);
 }
 
 console.log('Matched:', matched, '| Unmatched:', [...unmatched].join(', '));
